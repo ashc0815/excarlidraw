@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Architecture Comparison</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+
+  .container {
+    width: 1200px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 24px;
+    padding: 48px;
+    border: 1px solid #334155;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+
+  .header p {
+    font-size: 16px;
+    color: #94a3b8;
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+
+  .arch-card {
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid #334155;
+    position: relative;
+  }
+
+  .arch-card.recommended {
+    border-color: #22c55e;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+  }
+
+  .badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: #22c55e;
+    color: #0f172a;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .arch-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .arch-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 24px;
+  }
+
+  .diagram {
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Left diagram - Over-engineered */
+  .nodes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .node {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    position: relative;
+  }
+
+  .node.orchestrator {
+    grid-column: 1 / -1;
+    background: #7c3aed20;
+    border-color: #7c3aed;
+    color: #a78bfa;
+    margin-bottom: 4px;
+  }
+
+  .node.worker {
+    background: #1e40af15;
+    border-color: #3b82f6;
+    color: #60a5fa;
+    font-size: 11px;
+  }
+
+  .arrows-down {
+    text-align: center;
+    color: #475569;
+    font-size: 18px;
+    margin: 4px 0;
+    letter-spacing: 24px;
+  }
+
+  /* Right diagram - Pragmatic */
+  .simple-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .main-node {
+    background: #22c55e20;
+    border: 2px solid #22c55e;
+    border-radius: 10px;
+    padding: 14px 28px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #4ade80;
+    width: 80%;
+  }
+
+  .arrow-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 11px;
+  }
+
+  .arrow-label .line {
+    width: 1px;
+    height: 20px;
+    background: #475569;
+  }
+
+  .sub-nodes {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sub-node {
+    background: #0ea5e920;
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #38bdf8;
+    flex: 1;
+    max-width: 45%;
+  }
+
+  .skill-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .skill-tag {
+    background: #f59e0b15;
+    border: 1px solid #f59e0b50;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fbbf24;
+  }
+
+  /* Metrics */
+  .metrics {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .metric {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .metric .icon { font-size: 14px; }
+  .metric.bad .icon { color: #ef4444; }
+  .metric.good .icon { color: #22c55e; }
+
+  /* Decision Framework */
+  .framework {
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid #334155;
+  }
+
+  .framework-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .tiers {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .tier {
+    flex: 1;
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .tier-num {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .tier:nth-child(1) .tier-num { color: #22c55e; }
+  .tier:nth-child(2) .tier-num { color: #f59e0b; }
+  .tier:nth-child(3) .tier-num { color: #ef4444; }
+
+  .tier:nth-child(1) { border: 1px solid #22c55e40; }
+  .tier:nth-child(2) { border: 1px solid #f59e0b40; }
+  .tier:nth-child(3) { border: 1px solid #ef444440; }
+
+  .tier-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .tier-desc {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 12px;
+  }
+
+  .tier-example {
+    font-size: 11px;
+    color: #94a3b8;
+    background: #1e293b;
+    border-radius: 6px;
+    padding: 8px;
+    font-style: italic;
+  }
+
+  .tier-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    font-size: 20px;
+    padding: 0 4px;
+    flex-shrink: 0;
+    width: 32px;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 12px;
+    color: #475569;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>When to Use Multi-Agent Architecture</h1>
+    <p>The 90% rule: most AI tasks don't need 4 agents arguing with each other</p>
+  </div>
+
+  <div class="comparison">
+    <!-- Left: Over-engineered -->
+    <div class="arch-card">
+      <div class="arch-title">❌ Over-Engineered</div>
+      <div class="arch-subtitle">4-agent system for a single workflow</div>
+      <div class="diagram">
+        <div class="nodes-grid">
+          <div class="node orchestrator">🎯 Orchestrator Agent</div>
+          <div class="arrows-down">↓ ↓ ↓ ↓</div>
+          <div class="node worker">📋 Planner</div>
+          <div class="node worker">🔍 Researcher</div>
+          <div class="node worker">✍️ Writer</div>
+          <div class="node worker">✅ Reviewer</div>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric bad"><span class="icon">⚡</span> 4x latency</div>
+        <div class="metric bad"><span class="icon">💰</span> 4x token cost</div>
+        <div class="metric bad"><span class="icon">🔧</span> Hard to debug</div>
+        <div class="metric bad"><span class="icon">🎭</span> Agents disagree</div>
+      </div>
+    </div>
+
+    <!-- Right: Pragmatic -->
+    <div class="arch-card recommended">
+      <div class="badge">✓ Start here</div>
+      <div class="arch-title">✅ Pragmatic</div>
+      <div class="arch-subtitle">Main agent + skills + on-demand subagents</div>
+      <div class="diagram">
+        <div class="simple-flow">
+          <div class="main-node">🧠 Main Agent</div>
+          <div class="arrow-label">
+            <div class="line"></div>
+            <span>built-in skills handle 80%</span>
+            <div class="line"></div>
+          </div>
+          <div class="skill-row">
+            <div class="skill-tag">📊 Data</div>
+            <div class="skill-tag">🔍 Search</div>
+            <div class="skill-tag">📝 Write</div>
+            <div class="skill-tag">📅 Calendar</div>
+          </div>
+          <div class="arrow-label">
+            <div class="line"></div>
+            <span>spawn only when needed</span>
+            <div class="line"></div>
+          </div>
+          <div class="sub-nodes">
+            <div class="sub-node">🔬 Deep Research<br><span style="font-size:9px;color:#64748b">complex analysis</span></div>
+            <div class="sub-node">💻 Code Agent<br><span style="font-size:9px;color:#64748b">multi-file changes</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric good"><span class="icon">⚡</span> Low latency</div>
+        <div class="metric good"><span class="icon">💰</span> Pay per use</div>
+        <div class="metric good"><span class="icon">🔧</span> Easy to debug</div>
+        <div class="metric good"><span class="icon">📈</span> Scales up</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decision Framework -->
+  <div class="framework">
+    <div class="framework-title">🎯 The 3-Tier Decision Framework</div>
+    <div class="tiers">
+      <div class="tier">
+        <div class="tier-num">Tier 1 — Default</div>
+        <div class="tier-name">Skill</div>
+        <div class="tier-desc">Single agent + tool call</div>
+        <div class="tier-example">"Summarize this doc"<br>"Check my calendar"</div>
+      </div>
+      <div class="tier-arrow">→</div>
+      <div class="tier">
+        <div class="tier-num">Tier 2 — When needed</div>
+        <div class="tier-name">Subagent</div>
+        <div class="tier-desc">Spawn for isolated heavy work</div>
+        <div class="tier-example">"Refactor this codebase"<br>"Research competitors"</div>
+      </div>
+      <div class="tier-arrow">→</div>
+      <div class="tier">
+        <div class="tier-num">Tier 3 — Rare</div>
+        <div class="tier-name">Multi-Agent</div>
+        <div class="tier-desc">Parallel specialists, shared state</div>
+        <div class="tier-example">"Simulate a debate"<br>"Run a pipeline with handoffs"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Most teams jump to Tier 3. Start at Tier 1. Upgrade only when you hit the wall.</div>
+</div>
+</body>
+</html>
